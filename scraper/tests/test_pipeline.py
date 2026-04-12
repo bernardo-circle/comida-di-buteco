@@ -125,6 +125,17 @@ class PipelineParsingTests(unittest.TestCase):
         self.assertEqual(len(unmatched_listings), 0)
         self.assertEqual(len(unmatched_details), 0)
 
+    def test_listing_without_detail_still_produces_final_record(self) -> None:
+        listing_fetcher = StubFetcher({self.settings.archive_url: ARCHIVE_MARKDOWN})
+        listing = list(ListingsScraper(self.settings, listing_fetcher).scrape_all())[0]
+
+        final_records, unmatched_listings, unmatched_details = match_listings_to_details([listing], [])
+
+        self.assertEqual(len(final_records), 1)
+        self.assertEqual(final_records[0].parse_status, "listing_only")
+        self.assertEqual(len(unmatched_listings), 1)
+        self.assertEqual(len(unmatched_details), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,14 +20,20 @@ class DetailsScraper:
     def discover_sitemap_urls(self) -> list[str]:
         sitemap_index_url = f"{self.settings.base_url}/wp-sitemap.xml"
         document = self.fetcher.fetch(sitemap_index_url)
-        return sorted(set(SITEMAP_PATTERN.findall(document.markdown)))
+        matches = list(dict.fromkeys(SITEMAP_PATTERN.findall(document.markdown)))
+        return sorted(matches, key=lambda url: int(re.search(r"buteco-sitemap(\d+)\.xml", url).group(1)))
 
     def discover_detail_urls(self) -> list[str]:
-        detail_urls: set[str] = set()
+        detail_urls: list[str] = []
+        seen: set[str] = set()
         for sitemap_url in self.discover_sitemap_urls():
             document = self.fetcher.fetch(sitemap_url)
-            detail_urls.update(DETAIL_URL_PATTERN.findall(document.markdown))
-        return sorted(detail_urls)
+            for url in DETAIL_URL_PATTERN.findall(document.markdown):
+                if url in seen:
+                    continue
+                seen.add(url)
+                detail_urls.append(url)
+        return detail_urls
 
     def parse_detail_page(self, markdown: str, detalhes_url: str) -> DetailRecord:
         lines = [line.strip() for line in markdown.splitlines()]

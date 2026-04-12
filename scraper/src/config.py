@@ -27,6 +27,7 @@ class Settings:
     scraper_fetch_mode: str = os.getenv("SCRAPER_FETCH_MODE", "auto")
     scraper_mirror_base_url: str = os.getenv("SCRAPER_MIRROR_BASE_URL", "https://r.jina.ai/http://")
     scraper_max_archive_pages: int = int(os.getenv("SCRAPER_MAX_ARCHIVE_PAGES", "200"))
+    scraper_detail_workers: int = int(os.getenv("SCRAPER_DETAIL_WORKERS", "8"))
     geocoder_provider: str = os.getenv("GEOCODER_PROVIDER", "nominatim")
     geocoder_email: str = os.getenv("GEOCODER_EMAIL", "")
     geocoder_user_agent: str = os.getenv("GEOCODER_USER_AGENT", "comida-di-buteco-mvp/0.1")

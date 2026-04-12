@@ -11,6 +11,39 @@ from .utils import (
 )
 
 
+def listing_only_record(listing: ListingRecord) -> FinalRecord:
+    parsed_address = parse_address_components(listing.listing_address)
+    payload = {
+        "id": listing.listing_slug,
+        "name": listing.listing_name,
+        "slug": listing.listing_slug,
+        "city": parsed_address["city"] or listing.city,
+        "state": parsed_address["state"],
+        "address_raw": listing.listing_address,
+        "address_normalized": parsed_address["address_normalized"],
+        "neighborhood": parsed_address["neighborhood"],
+        "complemento": None,
+        "phone": None,
+        "hours": None,
+        "dish_name": None,
+        "dish_description": None,
+        "image_url": listing.image_url,
+        "detalhes_url": listing.detalhes_url or "",
+        "maps_url": listing.maps_url or build_google_maps_url(listing.listing_address, listing.listing_name),
+        "lat": None,
+        "lng": None,
+        "geocode_status": "pending",
+        "geocode_confidence": None,
+        "geocode_provider": None,
+        "source_city": listing.city,
+        "source_page_number": listing.page_number,
+        "scraped_at": utc_now_iso(),
+        "parse_status": "listing_only",
+    }
+    missing_fields = missing_fields_from_mapping(payload, ["name", "address_raw"])
+    return FinalRecord(**payload, missing_fields=missing_fields)
+
+
 def merge_listing_and_detail(listing: ListingRecord, detail: DetailRecord) -> FinalRecord:
     address_raw = detail.full_address or listing.listing_address
     parsed_address = parse_address_components(address_raw)
@@ -73,6 +106,7 @@ def match_listings_to_details(listings: list[ListingRecord], details: list[Detai
 
         if chosen is None:
             unmatched_listings.append(listing)
+            final_records.append(listing_only_record(listing))
             continue
 
         matched_detail_slugs.add(chosen.slug)

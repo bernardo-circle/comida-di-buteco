@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from .config import INTERMEDIATE_DIR, OUTPUT_DIR, Settings
 from .details_scraper import DetailsScraper
 from .fetchers import build_fetcher
@@ -54,14 +56,74 @@ class Pipeline:
                 best_by_key[key] = detail
         return list(best_by_key.values())
 
-    def run_details(self) -> tuple[list[DetailRecord], RunSummary]:
-        detail_urls = self.details_scraper.discover_detail_urls()
+    def _fetch_detail_url(self, detalhes_url: str) -> DetailRecord:
+        scraper = DetailsScraper(self.settings, build_fetcher(self.settings))
+        return scraper.scrape_detail_url(detalhes_url)
+
+    def _prioritize_detail_urls(self, detail_urls: list[str], listings: list[ListingRecord] | None) -> list[str]:
+        if not listings:
+            return detail_urls
+
+        listing_slugs = {listing.listing_slug for listing in listings}
+        prioritized: list[str] = []
+        fallback: list[str] = []
+        for url in detail_urls:
+            tail = url.rstrip("/").split("/")[-1]
+            if any(tail == slug or tail.startswith(slug) or slug in tail for slug in listing_slugs):
+                prioritized.append(url)
+            else:
+                fallback.append(url)
+        return prioritized + fallback
+
+    def run_details(self, listings: list[ListingRecord] | None = None) -> tuple[list[DetailRecord], RunSummary]:
+        detail_urls = self._prioritize_detail_urls(self.details_scraper.discover_detail_urls(), listings)
         details: list[DetailRecord] = []
-        for detalhes_url in detail_urls:
-            detail = self.details_scraper.scrape_detail_url(detalhes_url)
-            if clean_text(detail.city) != self.settings.target_city or clean_text(detail.state) != self.settings.target_state:
-                continue
-            details.append(detail)
+        total_urls = len(detail_urls)
+        workers = max(1, self.settings.scraper_detail_workers)
+        remaining_target_keys = None
+        if listings:
+            remaining_target_keys = {
+                (canonical_name_key(listing.listing_name), address_signature(listing.listing_address))
+                for listing in listings
+            }
+
+        processed = 0
+        batch_size = max(workers * 4, 32)
+        for start in range(0, total_urls, batch_size):
+            batch = detail_urls[start : start + batch_size]
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                futures = {executor.submit(self._fetch_detail_url, detalhes_url): detalhes_url for detalhes_url in batch}
+                for future in as_completed(futures):
+                    processed += 1
+                    try:
+                        detail = future.result()
+                    except Exception:
+                        continue
+
+                    if clean_text(detail.city) != self.settings.target_city or clean_text(detail.state) != self.settings.target_state:
+                        if processed % 100 == 0 or processed == total_urls:
+                            print(f"Detail progress: {processed}/{total_urls} processed, {len(details)} Rio candidates kept")
+                        continue
+
+                    if remaining_target_keys is not None:
+                        detail_key = (canonical_name_key(detail.name), address_signature(detail.full_address))
+                        if detail_key not in remaining_target_keys:
+                            if processed % 100 == 0 or processed == total_urls:
+                                print(f"Detail progress: {processed}/{total_urls} processed, {len(details)} Rio candidates kept")
+                            continue
+                        remaining_target_keys.discard(detail_key)
+
+                    details.append(detail)
+
+                    if processed % 100 == 0 or processed == total_urls:
+                        remaining_count = len(remaining_target_keys) if remaining_target_keys is not None else "?"
+                        print(
+                            f"Detail progress: {processed}/{total_urls} processed, {len(details)} Rio candidates kept, {remaining_count} listing matches remaining"
+                        )
+
+            if remaining_target_keys is not None and not remaining_target_keys:
+                break
+
         details = self._dedupe_details(details)
         write_json(DETAILS_JSON_PATH, serialize_records(details))
         write_csv(DETAILS_CSV_PATH, serialize_records(details))
@@ -82,7 +144,7 @@ class Pipeline:
 
     def run(self) -> RunSummary:
         listings, listing_summary = self.run_listings()
-        details, details_summary = self.run_details()
+        details, details_summary = self.run_details(listings)
         final_records, _, _ = self.run_normalize(listings, details)
         geocoded_records = self.run_geocode(final_records)
         return RunSummary(

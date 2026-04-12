@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -74,6 +75,7 @@ class RequestsFetcher(BaseFetcher):
         if response.status_code == 403 or "cf-mitigated" in response.headers or "Just a moment" in response.text:
             raise FetchError(f"Direct fetch blocked for {url}")
         response.raise_for_status()
+        time.sleep(self.settings.request_delay_seconds)
         return FetchedDocument(
             request_url=url,
             source_url=url,
@@ -100,6 +102,7 @@ class MirrorFetcher(BaseFetcher):
         mirror_url = f"{self.settings.scraper_mirror_base_url}{url}"
         response = self.session.get(mirror_url, timeout=self.settings.request_timeout_seconds)
         response.raise_for_status()
+        time.sleep(self.settings.request_delay_seconds)
         return parse_reader_response(url, response.text)
 
 
