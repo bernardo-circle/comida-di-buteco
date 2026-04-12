@@ -1,0 +1,15 @@
+.DS_Store
+.env
+.venv/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+output/*.csv
+output/*.json
+!output/.gitkeep
+data/cache/*.json
+data/cache/**/*.json
+!data/cache/.gitkeep
+data/intermediate/*
+!data/intermediate/.gitkeep
