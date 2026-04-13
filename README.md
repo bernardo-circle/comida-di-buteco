@@ -5,7 +5,7 @@ Static-data MVP for Rio de Janeiro buteco listings from Comida di Buteco.
 The project has two layers:
 
 - `scraper/`: crawl, enrich, normalize, and geocode the data into flat files
-- `frontend/`: React + Leaflet UI that reads the generated dataset and renders it on a map
+- `frontend/`: React + Leaflet UI that reads a committed static dataset and renders it on a map
 
 ## Repository structure
 
@@ -24,7 +24,7 @@ scraper/            Python pipeline
 - Scraping: Python, `requests`, mirrored markdown fetch fallback, parser layer in Python
 - Discovery: archive pagination + WordPress sitemap discovery
 - Geocoding: Nominatim with local cache
-- Frontend: React, Vite, Leaflet, OpenStreetMap, marker clustering
+- Frontend: React, Vite, Leaflet
 - Persistence: flat files only
 
 ## Why the scraper uses a mirrored fetch path
@@ -110,9 +110,9 @@ Final outputs:
 
 ## Frontend commands
 
-The frontend tries to read `../output/rio_butecos_final.json` through a dev-only Vite route at `/api/butecos`.
+The frontend reads the committed static dataset at `frontend/public/data/rio_butecos_final.json`.
 
-If that file does not exist yet, it falls back to `frontend/public/data/rio_butecos_sample.json`.
+If that file is missing for any reason, it falls back to `frontend/public/data/rio_butecos_sample.json`.
 
 ### Start local dev
 
@@ -128,6 +128,21 @@ cd frontend
 npm run build
 ```
 
+## Deploy on Vercel
+
+This frontend is now a plain static Vite app, so Vercel is the easiest hosting option.
+
+1. Push this branch to GitHub.
+2. In Vercel, choose `Add New Project`.
+3. Import the GitHub repository.
+4. Set the project root to `frontend`.
+5. Keep the default build settings:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+6. Deploy and share the generated URL.
+
+Because the real dataset is committed under `frontend/public/data/rio_butecos_final.json`, no server or runtime API is needed.
+
 ## Current behavior
 
 - Archive pages are crawled sequentially and filtered to Rio capital by address parsing
@@ -141,7 +156,7 @@ npm run build
 
 - The first full `details` run can be slow because the public sitemap contains historical buteco pages, not only current entries
 - The archive mirror preserves visible card content but not the original `Detalhes` links, so detail URL discovery comes from the sitemap instead of the archive cards
-- The frontend build is verified, but the app needs a generated `output/rio_butecos_final.json` for the full real dataset experience
+- If the dataset changes in the future, `frontend/public/data/rio_butecos_final.json` should be refreshed before redeploying
 - Geocode confidence is heuristic because Nominatim does not expose a dedicated confidence score
 
 ## Tests and verification run so far
@@ -161,4 +176,4 @@ npm run build
 3. Persist crawl logs and per-record failure reasons to a run report file
 4. Add richer neighborhood parsing and address normalization
 5. Add frontend result count by visible map bounds
-6. Add lightweight tests for the Vite dataset route and frontend filters
+6. Add lightweight tests for frontend filters and static dataset loading
