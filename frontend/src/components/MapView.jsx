@@ -44,6 +44,12 @@ export default function MapView({ records, selectedId, onSelect }) {
 
   return (
     <section className="map-panel">
+      {!mappableRecords.length ? (
+        <div className="map-empty-state">
+          <strong>Nenhum ponto para exibir</strong>
+          <p>Revise os filtros da busca para voltar a ver os butecos no mapa.</p>
+        </div>
+      ) : null}
       <MapContainer center={RIO_CENTER} zoom={11} className="map-root" scrollWheelZoom>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

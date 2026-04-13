@@ -100,6 +100,16 @@ select {
   object-fit: cover;
 }
 
+.details-image-fallback {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(185, 85, 38, 0.16), rgba(214, 180, 116, 0.2)),
+    #f7ebd4;
+  color: #8d4c1f;
+  font-size: 15px;
+}
+
 .details-copy {
   padding: 20px;
 }
@@ -129,8 +139,18 @@ select {
   line-height: 1.4;
 }
 
+.detail-list {
+  display: grid;
+  gap: 4px;
+}
+
+.detail-muted {
+  color: #87684a;
+}
+
 .dish-description {
   color: #5d4125;
+  min-height: 48px;
 }
 
 .detail-links {
@@ -180,6 +200,17 @@ select {
   color: #6b4825;
 }
 
+.results-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.results-meta-row p {
+  margin: 0;
+}
+
 .results-list {
   display: grid;
   gap: 10px;
@@ -196,6 +227,15 @@ select {
   cursor: pointer;
   display: grid;
   gap: 4px;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.result-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(185, 85, 38, 0.35);
 }
 
 .result-item strong {
@@ -213,8 +253,59 @@ select {
   transform: translateY(-1px);
 }
 
-.map-panel {
+.empty-results {
+  display: grid;
+  gap: 10px;
   padding: 18px;
+  border: 1px dashed rgba(121, 84, 45, 0.24);
+  border-radius: 18px;
+  background: rgba(255, 251, 243, 0.72);
+  color: #6b4825;
+}
+
+.empty-results p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ghost-button {
+  justify-self: start;
+  border: 1px solid rgba(185, 85, 38, 0.28);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: rgba(255, 246, 232, 0.92);
+  color: #8d4c1f;
+  cursor: pointer;
+}
+
+.ghost-button:hover {
+  background: rgba(255, 238, 213, 0.96);
+}
+
+.map-panel {
+  position: relative;
+  padding: 18px;
+}
+
+.map-empty-state {
+  position: absolute;
+  top: 34px;
+  left: 34px;
+  z-index: 500;
+  max-width: 280px;
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 248, 235, 0.94);
+  border: 1px solid rgba(121, 84, 45, 0.18);
+  box-shadow: 0 10px 25px rgba(76, 47, 16, 0.12);
+  color: #5d4125;
+}
+
+.map-empty-state p {
+  margin: 0;
+  line-height: 1.45;
 }
 
 .map-root {

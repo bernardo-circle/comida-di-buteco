@@ -83,6 +83,7 @@ def merge_listing_and_detail(listing: ListingRecord, detail: DetailRecord) -> Fi
 
 def match_listings_to_details(listings: list[ListingRecord], details: list[DetailRecord]) -> tuple[list[FinalRecord], list[ListingRecord], list[DetailRecord]]:
     details_by_name: dict[str, list[DetailRecord]] = {}
+    details_by_url = {detail.detalhes_url: detail for detail in details}
     for detail in details:
         name_key = canonical_name_key(detail.name)
         if name_key:
@@ -93,8 +94,11 @@ def match_listings_to_details(listings: list[ListingRecord], details: list[Detai
     unmatched_listings: list[ListingRecord] = []
 
     for listing in listings:
-        candidates = details_by_name.get(canonical_name_key(listing.listing_name), [])
         chosen = None
+        if listing.detalhes_url:
+            chosen = details_by_url.get(listing.detalhes_url)
+
+        candidates = details_by_name.get(canonical_name_key(listing.listing_name), []) if chosen is None else []
         if candidates:
             listing_signature = address_signature(listing.listing_address)
             for candidate in candidates:

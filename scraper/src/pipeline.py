@@ -9,6 +9,7 @@ from .geocode import Geocoder
 from .listings_scraper import ListingsScraper
 from .models import DetailRecord, ListingRecord, RunSummary
 from .normalize import match_listings_to_details
+from .overrides import DETAIL_URL_OVERRIDES
 from .utils import address_signature, canonical_name_key, clean_text, serialize_records, write_csv, write_json
 
 
@@ -30,6 +31,10 @@ class Pipeline:
 
     def run_listings(self) -> tuple[list[ListingRecord], RunSummary]:
         listings = list(self.listings_scraper.scrape_all())
+        for listing in listings:
+            override_url = DETAIL_URL_OVERRIDES.get(listing.listing_name)
+            if override_url:
+                listing.detalhes_url = override_url
         write_json(LISTINGS_JSON_PATH, serialize_records(listings))
         write_csv(LISTINGS_CSV_PATH, serialize_records(listings))
         summary = RunSummary(
@@ -65,15 +70,17 @@ class Pipeline:
             return detail_urls
 
         listing_slugs = {listing.listing_slug for listing in listings}
+        override_urls = {listing.detalhes_url for listing in listings if listing.detalhes_url}
         prioritized: list[str] = []
         fallback: list[str] = []
         for url in detail_urls:
             tail = url.rstrip("/").split("/")[-1]
-            if any(tail == slug or tail.startswith(slug) or slug in tail for slug in listing_slugs):
+            if url in override_urls or any(tail == slug or tail.startswith(slug) or slug in tail for slug in listing_slugs):
                 prioritized.append(url)
             else:
                 fallback.append(url)
-        return prioritized + fallback
+        missing_override_urls = [url for url in override_urls if url not in prioritized and url not in fallback]
+        return missing_override_urls + prioritized + fallback
 
     def run_details(self, listings: list[ListingRecord] | None = None) -> tuple[list[DetailRecord], RunSummary]:
         detail_urls = self._prioritize_detail_urls(self.details_scraper.discover_detail_urls(), listings)

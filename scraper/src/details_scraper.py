@@ -57,7 +57,7 @@ class DetailsScraper:
         dish_description = None
         complemento = None
 
-        for line in section_lines:
+        for index, line in enumerate(section_lines):
             if not line.startswith("**"):
                 continue
 
@@ -67,6 +67,15 @@ class DetailsScraper:
 
             label = clean_text(label_match.group("label").rstrip(":"))
             value = clean_text(label_match.group("value"))
+            if value is None:
+                for candidate in section_lines[index + 1 :]:
+                    candidate_value = clean_text(candidate)
+                    if not candidate_value:
+                        continue
+                    if candidate_value.startswith("**"):
+                        break
+                    value = candidate_value
+                    break
 
             if label == "Endereço":
                 full_address = value

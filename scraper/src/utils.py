@@ -120,12 +120,21 @@ def parse_address_components(address: str | None) -> dict[str, str | None]:
         state = clean_text(city_state_match.group("state"))
         body = clean_text(city_state_match.group("body"))
         if body:
-            parts = [clean_text(part) for part in body.split(",") if clean_text(part)]
-            if len(parts) >= 2:
-                neighborhood = parts[0]
-                city = parts[-1]
-            elif len(parts) == 1:
-                city = parts[0]
+            # Some listings omit the usual "|" separator and place the city directly
+            # after the street number, e.g. "Rua X, 123 Rio de Janeiro - RJ".
+            if not remainder:
+                street_city_match = re.search(r"(?P<street>.*?\d+)\s+(?P<city>[A-Za-zÀ-ÿ' ]+)$", body)
+                if street_city_match and not re.search(r"\d", street_city_match.group("city")):
+                    street = clean_text(street_city_match.group("street"))
+                    city = clean_text(street_city_match.group("city"))
+
+            if city is None:
+                parts = [clean_text(part) for part in body.split(",") if clean_text(part)]
+                if len(parts) >= 2:
+                    neighborhood = parts[0]
+                    city = parts[-1]
+                elif len(parts) == 1:
+                    city = parts[0]
 
     return {
         "address_normalized": cleaned,

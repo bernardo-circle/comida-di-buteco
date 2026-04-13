@@ -3,6 +3,13 @@ import { loadButecos } from "./api/dataLoader";
 import MapView from "./components/MapView";
 import Sidebar from "./components/Sidebar";
 
+function searchKey(value) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 export default function App() {
   const [records, setRecords] = useState([]);
   const [status, setStatus] = useState("loading");
@@ -39,12 +46,18 @@ export default function App() {
   }, [records]);
 
   const filteredRecords = useMemo(() => {
+    const normalizedQuery = searchKey(query.trim());
     return records.filter((record) => {
-      const matchesQuery = record.name.toLowerCase().includes(query.trim().toLowerCase());
+      const matchesQuery = !normalizedQuery || searchKey(record.name).includes(normalizedQuery);
       const matchesNeighborhood = neighborhood ? record.neighborhood === neighborhood : true;
       return matchesQuery && matchesNeighborhood;
     });
   }, [records, query, neighborhood]);
+
+  function resetFilters() {
+    setQuery("");
+    setNeighborhood("");
+  }
 
   useEffect(() => {
     if (!filteredRecords.length) {
@@ -78,6 +91,7 @@ export default function App() {
         onNeighborhoodChange={setNeighborhood}
         selectedId={selectedId}
         onSelect={setSelectedId}
+        onResetFilters={resetFilters}
       />
       <MapView records={filteredRecords} selectedId={selectedId} onSelect={setSelectedId} />
     </main>
