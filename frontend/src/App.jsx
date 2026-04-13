@@ -16,6 +16,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +27,6 @@ export default function App() {
           return;
         }
         setRecords(payload);
-        setSelectedId(payload[0]?.id ?? null);
         setStatus("ready");
       })
       .catch(() => {
@@ -54,20 +54,46 @@ export default function App() {
     });
   }, [records, query, neighborhood]);
 
+  const selectedRecord = useMemo(
+    () => filteredRecords.find((record) => record.id === selectedId) || records.find((record) => record.id === selectedId) || null,
+    [filteredRecords, records, selectedId],
+  );
+
+  const browseFocusRecord = useMemo(() => {
+    if (!neighborhood || isDetailOpen) {
+      return null;
+    }
+
+    return filteredRecords[0] ?? null;
+  }, [filteredRecords, isDetailOpen, neighborhood]);
+
+  const browseFocusKey = neighborhood ? `${neighborhood}:${browseFocusRecord?.id ?? "none"}` : null;
+
   function resetFilters() {
     setQuery("");
     setNeighborhood("");
   }
 
+  function openButecoDetails(id) {
+    setSelectedId(id);
+    setIsDetailOpen(true);
+  }
+
   useEffect(() => {
     if (!filteredRecords.length) {
       setSelectedId(null);
+      setIsDetailOpen(false);
+      return;
+    }
+
+    if (selectedId === null) {
       return;
     }
 
     const stillVisible = filteredRecords.some((record) => record.id === selectedId);
     if (!stillVisible) {
-      setSelectedId(filteredRecords[0].id);
+      setSelectedId(null);
+      setIsDetailOpen(false);
     }
   }, [filteredRecords, selectedId]);
 
@@ -90,10 +116,22 @@ export default function App() {
         neighborhood={neighborhood}
         onNeighborhoodChange={setNeighborhood}
         selectedId={selectedId}
-        onSelect={setSelectedId}
+        selectedRecord={isDetailOpen ? selectedRecord : null}
+        onSelect={openButecoDetails}
+        onBackToBrowse={() => {
+          setIsDetailOpen(false);
+          setSelectedId(null);
+        }}
         onResetFilters={resetFilters}
       />
-      <MapView records={filteredRecords} selectedId={selectedId} onSelect={setSelectedId} />
+      <MapView
+        records={filteredRecords}
+        selectedId={selectedId}
+        selectedRecord={selectedRecord}
+        browseFocusRecord={browseFocusRecord}
+        browseFocusKey={browseFocusKey}
+        onSelect={openButecoDetails}
+      />
     </main>
   );
 }
