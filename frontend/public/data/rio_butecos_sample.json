@@ -1,0 +1,30 @@
+[
+  {
+    "id": "3508-revision-v1",
+    "name": "Baixo Gago",
+    "slug": "3508-revision-v1",
+    "city": "Rio de Janeiro",
+    "state": "RJ",
+    "address_raw": "R. Gago Coutinho, 51 | Laranjeiras, Rio de Janeiro - RJ",
+    "address_normalized": "R. Gago Coutinho, 51 | Laranjeiras, Rio de Janeiro - RJ",
+    "neighborhood": "Laranjeiras",
+    "complemento": null,
+    "phone": "(21) 98849-3672 | (21) 2556-0638",
+    "hours": "Segunda-feira: 12h - 22h | Terça-feira: 12h - 22h | Quarta-feira: 12h - 23h30 | Quinta-feira: 12h - 23h30 | Sexta-feira: 12h - 23h30 | Sábado: 12h - 23h30 | Domingo: 12h - 17h30",
+    "dish_name": "Porogodó",
+    "dish_description": "Cestinhas de massa de pastel assadas, recheadas com costela bovina e alho-poro e carne-seca com alho-poro. Acompanha geleia artesanal de damasco.",
+    "image_url": "https://cdb-static-files.s3.amazonaws.com/wp-content/uploads/2026/03/09081735/baixogago_porogodo_capital_2026_joana_1-scaled.jpg",
+    "detalhes_url": "https://comidadibuteco.com.br/buteco/3508-revision-v1/",
+    "maps_url": "https://www.google.com/maps/search/?api=1&query=Baixo+Gago%2C+R.+Gago+Coutinho%2C+51+%7C+Laranjeiras%2C+Rio+de+Janeiro+-+RJ",
+    "lat": -22.9314033,
+    "lng": -43.1811229,
+    "geocode_status": "ok",
+    "geocode_confidence": "low",
+    "geocode_provider": "nominatim",
+    "source_city": "Rio de Janeiro",
+    "source_page_number": null,
+    "scraped_at": "2026-04-12T20:00:00+00:00",
+    "parse_status": "ok",
+    "missing_fields": []
+  }
+]
