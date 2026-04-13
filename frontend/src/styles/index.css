@@ -40,34 +40,33 @@ select {
 .app-shell {
   display: grid;
   grid-template-columns: 420px 1fr;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
   display: grid;
-  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   gap: 18px;
   padding: 24px;
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
   background: linear-gradient(180deg, rgba(255, 244, 220, 0.96) 0%, rgba(246, 221, 178, 0.96) 100%);
   border-right: 1px solid rgba(108, 66, 20, 0.14);
   backdrop-filter: blur(16px);
 }
 
-.sidebar-header h1,
-.details-copy h2 {
-  margin: 0;
-  line-height: 0.95;
-}
-
-.sidebar-header h1 {
-  font-size: 48px;
+.sidebar-detail-mode {
+  grid-template-rows: 1fr;
 }
 
 .eyebrow {
   margin: 0 0 8px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 12px;
+  font-size: 18px;
+  font-weight: 600;
   color: #8d4c1f;
 }
 
@@ -77,46 +76,11 @@ select {
   line-height: 1.5;
 }
 
-.details-card,
 .filters,
 .results-meta {
   background: rgba(255, 255, 255, 0.52);
   border: 1px solid rgba(121, 84, 45, 0.14);
   border-radius: 24px;
-}
-
-.details-card {
-  overflow: hidden;
-}
-
-.details-card.empty {
-  padding: 20px;
-}
-
-.details-image {
-  display: block;
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-}
-
-.details-image-fallback {
-  display: grid;
-  place-items: center;
-  background:
-    linear-gradient(135deg, rgba(185, 85, 38, 0.16), rgba(214, 180, 116, 0.2)),
-    #f7ebd4;
-  color: #8d4c1f;
-  font-size: 15px;
-}
-
-.details-copy {
-  padding: 20px;
-}
-
-.details-copy p {
-  margin: 8px 0 0;
-  line-height: 1.5;
 }
 
 .detail-grid {
@@ -157,11 +121,13 @@ select {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
   margin-top: 18px;
 }
 
 .detail-links a {
   display: inline-flex;
+  max-width: 100%;
   padding: 10px 14px;
   border-radius: 999px;
   background: #b95526;
@@ -214,6 +180,7 @@ select {
 .results-list {
   display: grid;
   gap: 10px;
+  min-width: 0;
   overflow: auto;
   padding-right: 4px;
 }
@@ -285,11 +252,12 @@ select {
 .map-panel {
   position: relative;
   padding: 18px;
+  height: 100vh;
 }
 
 .map-empty-state {
   position: absolute;
-  top: 34px;
+  top: 320px;
   left: 34px;
   z-index: 500;
   max-width: 280px;
@@ -321,17 +289,111 @@ select {
   font-family: "Iowan Old Style", Georgia, serif;
 }
 
-@media (max-width: 1100px) {
+.map-popup {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.sidebar-detail {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 16px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.detail-back-button {
+  align-self: start;
+}
+
+.sidebar-detail-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(121, 84, 45, 0.18);
+}
+
+.sidebar-detail-image-fallback {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(185, 85, 38, 0.16), rgba(214, 180, 116, 0.2)),
+    #f7ebd4;
+  color: #8d4c1f;
+  font-size: 15px;
+}
+
+.sidebar-detail-copy {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 6px 4px 4px 0;
+}
+
+.sidebar-detail-copy h2 {
+  margin: 0;
+  line-height: 0.98;
+  font-size: 30px;
+}
+
+.sidebar-detail-address {
+  margin: 0;
+  color: #5d4125;
+  line-height: 1.45;
+}
+
+.map-popup span,
+.map-popup em {
+  color: #5d4125;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.map-popup em {
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: auto;
+  }
+
+  .sidebar {
+    height: auto;
+    overflow: visible;
   }
 
   .map-panel {
+    height: 72vh;
     padding-top: 0;
   }
 
+  .map-empty-state {
+    top: 248px;
+    left: 16px;
+  }
+
   .map-root {
-    height: 65vh;
+    height: 100%;
     border-radius: 24px 24px 0 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-detail-image {
+    height: 140px;
   }
 }
