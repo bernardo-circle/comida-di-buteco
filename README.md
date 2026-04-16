@@ -1,11 +1,11 @@
-# Comida di Buteco MVP
+# Comida di Buteco
 
-Static-data MVP for Rio de Janeiro buteco listings from Comida di Buteco.
+Rio de Janeiro buteco directory and map built from Comida di Buteco listing pages.
 
-The project has two layers:
+The project has two main parts:
 
-- `scraper/`: crawl, enrich, normalize, and geocode the data into flat files
-- `frontend/`: React + Leaflet UI that reads a committed static dataset and renders it on a map
+- `scraper/`: collects, enriches, normalizes, and geocodes buteco data into flat files
+- `frontend/`: React + Leaflet app that loads the generated dataset and presents it as a searchable map experience
 
 ## Repository structure
 
@@ -26,6 +26,21 @@ scraper/            Python pipeline
 - Geocoding: Nominatim with local cache
 - Frontend: React, Vite, Leaflet
 - Persistence: flat files only
+
+## Project status
+
+The current repo supports:
+
+- crawling Rio listings from the Comida di Buteco site
+- enriching records with detail-page data
+- geocoding addresses during the data pipeline
+- exporting CSV and JSON output artifacts
+- browsing the resulting dataset in a local map UI with:
+  - search by name
+  - neighborhood filter
+  - individual map markers
+  - selected buteco details in the sidebar
+  - mobile-friendly browse/details flow
 
 ## Why the scraper uses a mirrored fetch path
 
@@ -130,9 +145,9 @@ npm run build
 
 ## Deploy on Vercel
 
-This frontend is now a plain static Vite app, so Vercel is the easiest hosting option.
+This frontend is a plain static Vite app, so Vercel is the easiest hosting option.
 
-1. Push this branch to GitHub.
+1. Push the code to GitHub.
 2. In Vercel, choose `Add New Project`.
 3. Import the GitHub repository.
 4. Set the project root to `frontend`.
@@ -141,39 +156,51 @@ This frontend is now a plain static Vite app, so Vercel is the easiest hosting o
    - Output directory: `dist`
 6. Deploy and share the generated URL.
 
-Because the real dataset is committed under `frontend/public/data/rio_butecos_final.json`, no server or runtime API is needed.
+Because the real dataset is committed under `frontend/public/data/rio_butecos_final.json`, no backend or runtime API is needed.
+
+## Stadia Maps authentication
+
+The deployed frontend uses Stadia Maps tiles. Local development works on `localhost`, but production deployments need Stadia authentication.
+
+Recommended setup:
+
+1. Create or sign in to a Stadia Maps account.
+2. Open `Manage Properties`.
+3. Add your deployed domain under `Authentication Configuration`.
+4. If using Vercel, make sure the actual `*.vercel.app` domain is allowed if that is what the browser sends as the origin.
+5. Refresh the deployed app after saving.
 
 ## Current behavior
 
-- Archive pages are crawled sequentially and filtered to Rio capital by address parsing
-- Detail URLs are discovered from the site sitemap
-- Detail parsing is resilient to missing fields
-- Historical duplicate detail pages are deduped by name/address, preferring the most recent-looking image year
-- Geocoding is cached in `data/cache/geocode_cache.json`
-- Frontend supports search, neighborhood filter, clustered markers, marker click, and detail view
+- archive pages are crawled sequentially and filtered to Rio capital by address parsing
+- detail URLs are discovered from the site sitemap
+- detail parsing is resilient to missing fields
+- historical duplicate detail pages are deduped by name/address, preferring the most recent-looking image year
+- geocoding is cached in `data/cache/geocode_cache.json`
+- the frontend supports search, neighborhood filter, marker hover/click interaction, selected-record details, and mobile browsing
 
 ## Known limitations
 
-- The first full `details` run can be slow because the public sitemap contains historical buteco pages, not only current entries
-- The archive mirror preserves visible card content but not the original `Detalhes` links, so detail URL discovery comes from the sitemap instead of the archive cards
-- If the dataset changes in the future, `frontend/public/data/rio_butecos_final.json` should be refreshed before redeploying
-- Geocode confidence is heuristic because Nominatim does not expose a dedicated confidence score
+- the first full `details` run can be slow because the public sitemap contains historical buteco pages, not only current entries
+- the archive mirror preserves visible card content but not the original `Detalhes` links, so detail URL discovery comes from the sitemap instead of the archive cards
+- if the dataset changes in the future, `frontend/public/data/rio_butecos_final.json` should be refreshed before redeploying
+- geocode confidence is heuristic because Nominatim does not expose a dedicated confidence score
 
-## Tests and verification run so far
+## Tests and verification
 
 - `python3 -m compileall scraper/src scraper/tests`
 - `PYTHONPATH=. ../.venv/bin/python -m unittest discover tests`
-- Live archive page parser check through mirrored fetch
-- Live sitemap discovery and detail parser check through mirrored fetch
-- Live Nominatim geocode check
+- live archive page parser check through mirrored fetch
+- live sitemap discovery and detail parser check through mirrored fetch
+- live Nominatim geocode check
 - `npm run build`
 - `npm run dev` boot check
 
-## Next improvements after MVP
+## Next improvements
 
-1. Add a current-year hint to detail selection so historical pages are excluded earlier
-2. Add concurrent detail fetching with a conservative worker limit
-3. Persist crawl logs and per-record failure reasons to a run report file
-4. Add richer neighborhood parsing and address normalization
-5. Add frontend result count by visible map bounds
-6. Add lightweight tests for frontend filters and static dataset loading
+1. Add a current-year hint to detail selection so historical pages are excluded earlier.
+2. Add concurrent detail fetching with a conservative worker limit.
+3. Persist crawl logs and per-record failure reasons to a run report file.
+4. Add richer neighborhood parsing and address normalization.
+5. Add frontend result count by visible map bounds.
+6. Add lightweight frontend tests around filters, selection, and mobile interaction behavior.
