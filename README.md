@@ -1,11 +1,11 @@
-# Comida di Buteco MVP
+# Comida di Buteco
 
-Static-data MVP for Rio de Janeiro buteco listings from Comida di Buteco.
+Rio de Janeiro buteco directory and map built from Comida di Buteco listing pages.
 
-The project has two layers:
+The project has two main parts:
 
-- `scraper/`: crawl, enrich, normalize, and geocode the data into flat files
-- `frontend/`: React + Leaflet UI that reads the generated dataset and renders it on a map
+- `scraper/`: collects, enriches, normalizes, and geocodes buteco data into flat files
+- `frontend/`: React + Leaflet app that loads the generated dataset and presents it as a searchable map experience
 
 ## Repository structure
 
@@ -24,8 +24,22 @@ scraper/            Python pipeline
 - Scraping: Python, `requests`, mirrored markdown fetch fallback, parser layer in Python
 - Discovery: archive pagination + WordPress sitemap discovery
 - Geocoding: Nominatim with local cache
-- Frontend: React, Vite, Leaflet, OpenStreetMap, marker clustering
+- Frontend: React, Vite, Leaflet, `react-leaflet-cluster`
 - Persistence: flat files only
+
+## Project status
+
+The current repo supports:
+
+- crawling Rio listings from the Comida di Buteco site
+- enriching records with detail-page data
+- geocoding addresses during the data pipeline
+- exporting CSV and JSON output artifacts
+- browsing the resulting dataset in a local map UI with:
+  - search by name
+  - neighborhood filter
+  - clustered markers
+  - selected buteco details in the sidebar
 
 ## Why the scraper uses a mirrored fetch path
 
@@ -110,7 +124,7 @@ Final outputs:
 
 ## Frontend commands
 
-The frontend tries to read `../output/rio_butecos_final.json` through a dev-only Vite route at `/api/butecos`.
+In local development, the frontend reads `../output/rio_butecos_final.json` through a Vite route exposed at `/api/butecos`.
 
 If that file does not exist yet, it falls back to `frontend/public/data/rio_butecos_sample.json`.
 
@@ -130,35 +144,35 @@ npm run build
 
 ## Current behavior
 
-- Archive pages are crawled sequentially and filtered to Rio capital by address parsing
-- Detail URLs are discovered from the site sitemap
-- Detail parsing is resilient to missing fields
-- Historical duplicate detail pages are deduped by name/address, preferring the most recent-looking image year
-- Geocoding is cached in `data/cache/geocode_cache.json`
-- Frontend supports search, neighborhood filter, clustered markers, marker click, and detail view
+- archive pages are crawled sequentially and filtered to Rio capital by address parsing
+- detail URLs are discovered from the site sitemap
+- detail parsing is resilient to missing fields
+- historical duplicate detail pages are deduped by name/address, preferring the most recent-looking image year
+- geocoding is cached in `data/cache/geocode_cache.json`
+- the frontend supports search, neighborhood filter, clustered markers, marker click, and selected-record details
 
 ## Known limitations
 
-- The first full `details` run can be slow because the public sitemap contains historical buteco pages, not only current entries
-- The archive mirror preserves visible card content but not the original `Detalhes` links, so detail URL discovery comes from the sitemap instead of the archive cards
-- The frontend build is verified, but the app needs a generated `output/rio_butecos_final.json` for the full real dataset experience
-- Geocode confidence is heuristic because Nominatim does not expose a dedicated confidence score
+- the first full `details` run can be slow because the public sitemap contains historical buteco pages, not only current entries
+- the archive mirror preserves visible card content but not the original `Detalhes` links, so detail URL discovery comes from the sitemap instead of the archive cards
+- the full frontend experience depends on a generated `output/rio_butecos_final.json`; otherwise the UI falls back to sample data
+- geocode confidence is heuristic because Nominatim does not expose a dedicated confidence score
 
-## Tests and verification run so far
+## Tests and verification
 
 - `python3 -m compileall scraper/src scraper/tests`
 - `PYTHONPATH=. ../.venv/bin/python -m unittest discover tests`
-- Live archive page parser check through mirrored fetch
-- Live sitemap discovery and detail parser check through mirrored fetch
-- Live Nominatim geocode check
+- live archive page parser check through mirrored fetch
+- live sitemap discovery and detail parser check through mirrored fetch
+- live Nominatim geocode check
 - `npm run build`
 - `npm run dev` boot check
 
-## Next improvements after MVP
+## Next improvements
 
-1. Add a current-year hint to detail selection so historical pages are excluded earlier
-2. Add concurrent detail fetching with a conservative worker limit
-3. Persist crawl logs and per-record failure reasons to a run report file
-4. Add richer neighborhood parsing and address normalization
-5. Add frontend result count by visible map bounds
-6. Add lightweight tests for the Vite dataset route and frontend filters
+1. Add a current-year hint to detail selection so historical pages are excluded earlier.
+2. Add concurrent detail fetching with a conservative worker limit.
+3. Persist crawl logs and per-record failure reasons to a run report file.
+4. Add richer neighborhood parsing and address normalization.
+5. Add frontend result count by visible map bounds.
+6. Add lightweight frontend tests around filters and selection behavior.

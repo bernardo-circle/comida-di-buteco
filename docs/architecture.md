@@ -1,13 +1,13 @@
-# MVP Architecture
+# Project Architecture
 
 ## Overview
 
-The MVP is intentionally split into two clean modules:
+The project is intentionally split into two clean modules:
 
-- `scraper/` produces static output artifacts
-- `frontend/` renders those artifacts on a map
+- `scraper/` produces flat output artifacts
+- `frontend/` renders those artifacts as a browsable map UI
 
-This keeps the system easy to run locally and avoids introducing a database or backend API for a one-time static directory.
+This keeps the system easy to run locally and avoids introducing a database or backend service for a mostly static directory experience.
 
 ## Data collection strategy
 
@@ -55,27 +55,37 @@ The archive mirror preserves visible card content well, but not the original `De
 - Geocode in the data pipeline, never in the frontend
 - Use Nominatim with:
   - local cache
-  - Rio de Janeiro bias in fallback query
-  - stored status/confidence/provider metadata
+  - Rio de Janeiro bias in fallback queries
+  - stored status, provider, and heuristic confidence metadata
 
 ## Frontend strategy
 
 - Vite + React
-- Leaflet + OpenStreetMap tiles
-- Marker clustering from day one
-- Left sidebar:
-  - search
-  - neighborhood filter
-  - result list
+- Leaflet map with OpenStreetMap tiles
+- Marker clustering to keep dense areas readable
+- Sidebar includes:
+  - project framing
   - selected buteco details
-- Right map panel:
+  - search by name
+  - neighborhood filter
+  - results list
+- Map panel includes:
   - clustered markers
-  - click marker to select
-  - map recenters on selected listing
+  - marker click selection
+  - bounds fitting for filtered results
+  - fly-to behavior for selected records
+
+## Data loading strategy
+
+- During local development, Vite exposes `/api/butecos`
+- That route reads `output/rio_butecos_final.json` from the repository root
+- If the final dataset is missing, the UI falls back to `frontend/public/data/rio_butecos_sample.json`
+
+This keeps local development simple without introducing a separate API service.
 
 ## Key tradeoffs
 
-- No database: simplest path for static data
+- No database: simplest path for static or infrequently changing data
 - Mirror fallback for scraping: needed because direct HTML fetches hit Cloudflare challenge pages
-- Sitemap + archive hybrid: a pragmatic compromise between completeness and local reliability
+- Sitemap + archive hybrid: pragmatic compromise between completeness and local reliability
 - Flat output files: easier debugging and inspection than hidden state in a service layer
