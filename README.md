@@ -24,7 +24,7 @@ scraper/            Python pipeline
 - Scraping: Python, `requests`, mirrored markdown fetch fallback, parser layer in Python
 - Discovery: archive pagination + WordPress sitemap discovery
 - Geocoding: Nominatim with local cache
-- Frontend: React, Vite, Leaflet, `react-leaflet-cluster`
+- Frontend: React, Vite, Leaflet
 - Persistence: flat files only
 
 ## Project status
@@ -38,8 +38,9 @@ The current repo supports:
 - browsing the resulting dataset in a local map UI with:
   - search by name
   - neighborhood filter
-  - clustered markers
+  - individual map markers
   - selected buteco details in the sidebar
+  - mobile-friendly browse/details flow
 
 ## Why the scraper uses a mirrored fetch path
 
@@ -124,9 +125,9 @@ Final outputs:
 
 ## Frontend commands
 
-In local development, the frontend reads `../output/rio_butecos_final.json` through a Vite route exposed at `/api/butecos`.
+The frontend reads the committed static dataset at `frontend/public/data/rio_butecos_final.json`.
 
-If that file does not exist yet, it falls back to `frontend/public/data/rio_butecos_sample.json`.
+If that file is missing for any reason, it falls back to `frontend/public/data/rio_butecos_sample.json`.
 
 ### Start local dev
 
@@ -142,6 +143,33 @@ cd frontend
 npm run build
 ```
 
+## Deploy on Vercel
+
+This frontend is a plain static Vite app, so Vercel is the easiest hosting option.
+
+1. Push the code to GitHub.
+2. In Vercel, choose `Add New Project`.
+3. Import the GitHub repository.
+4. Set the project root to `frontend`.
+5. Keep the default build settings:
+   - Build command: `npm run build`
+   - Output directory: `dist`
+6. Deploy and share the generated URL.
+
+Because the real dataset is committed under `frontend/public/data/rio_butecos_final.json`, no backend or runtime API is needed.
+
+## Stadia Maps authentication
+
+The deployed frontend uses Stadia Maps tiles. Local development works on `localhost`, but production deployments need Stadia authentication.
+
+Recommended setup:
+
+1. Create or sign in to a Stadia Maps account.
+2. Open `Manage Properties`.
+3. Add your deployed domain under `Authentication Configuration`.
+4. If using Vercel, make sure the actual `*.vercel.app` domain is allowed if that is what the browser sends as the origin.
+5. Refresh the deployed app after saving.
+
 ## Current behavior
 
 - archive pages are crawled sequentially and filtered to Rio capital by address parsing
@@ -149,13 +177,13 @@ npm run build
 - detail parsing is resilient to missing fields
 - historical duplicate detail pages are deduped by name/address, preferring the most recent-looking image year
 - geocoding is cached in `data/cache/geocode_cache.json`
-- the frontend supports search, neighborhood filter, clustered markers, marker click, and selected-record details
+- the frontend supports search, neighborhood filter, marker hover/click interaction, selected-record details, and mobile browsing
 
 ## Known limitations
 
 - the first full `details` run can be slow because the public sitemap contains historical buteco pages, not only current entries
 - the archive mirror preserves visible card content but not the original `Detalhes` links, so detail URL discovery comes from the sitemap instead of the archive cards
-- the full frontend experience depends on a generated `output/rio_butecos_final.json`; otherwise the UI falls back to sample data
+- if the dataset changes in the future, `frontend/public/data/rio_butecos_final.json` should be refreshed before redeploying
 - geocode confidence is heuristic because Nominatim does not expose a dedicated confidence score
 
 ## Tests and verification
@@ -175,4 +203,4 @@ npm run build
 3. Persist crawl logs and per-record failure reasons to a run report file.
 4. Add richer neighborhood parsing and address normalization.
 5. Add frontend result count by visible map bounds.
-6. Add lightweight frontend tests around filters and selection behavior.
+6. Add lightweight frontend tests around filters, selection, and mobile interaction behavior.

@@ -40,34 +40,71 @@ select {
 .app-shell {
   display: grid;
   grid-template-columns: 420px 1fr;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
   display: grid;
-  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-rows: auto 1fr;
   gap: 18px;
   padding: 24px;
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
   background: linear-gradient(180deg, rgba(255, 244, 220, 0.96) 0%, rgba(246, 221, 178, 0.96) 100%);
   border-right: 1px solid rgba(108, 66, 20, 0.14);
   backdrop-filter: blur(16px);
 }
 
-.sidebar-header h1,
-.details-copy h2 {
-  margin: 0;
-  line-height: 0.95;
+.sidebar-detail-mode {
+  grid-template-rows: auto 1fr;
 }
 
-.sidebar-header h1 {
-  font-size: 48px;
+.browse-sidebar {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 18px;
+  min-height: 0;
+}
+
+.mobile-panel-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(121, 84, 45, 0.14);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.mobile-panel-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 16px;
+  background: transparent;
+  color: #7a4b23;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mobile-panel-button.active {
+  background: #b95526;
+  color: #fff6eb;
+  box-shadow: 0 8px 20px rgba(121, 53, 24, 0.16);
+}
+
+.mobile-panel-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .eyebrow {
   margin: 0 0 8px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 12px;
+  font-size: 18px;
+  font-weight: 600;
   color: #8d4c1f;
 }
 
@@ -77,46 +114,11 @@ select {
   line-height: 1.5;
 }
 
-.details-card,
 .filters,
 .results-meta {
   background: rgba(255, 255, 255, 0.52);
   border: 1px solid rgba(121, 84, 45, 0.14);
   border-radius: 24px;
-}
-
-.details-card {
-  overflow: hidden;
-}
-
-.details-card.empty {
-  padding: 20px;
-}
-
-.details-image {
-  display: block;
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-}
-
-.details-image-fallback {
-  display: grid;
-  place-items: center;
-  background:
-    linear-gradient(135deg, rgba(185, 85, 38, 0.16), rgba(214, 180, 116, 0.2)),
-    #f7ebd4;
-  color: #8d4c1f;
-  font-size: 15px;
-}
-
-.details-copy {
-  padding: 20px;
-}
-
-.details-copy p {
-  margin: 8px 0 0;
-  line-height: 1.5;
 }
 
 .detail-grid {
@@ -157,11 +159,13 @@ select {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
   margin-top: 18px;
 }
 
 .detail-links a {
   display: inline-flex;
+  max-width: 100%;
   padding: 10px 14px;
   border-radius: 999px;
   background: #b95526;
@@ -214,6 +218,7 @@ select {
 .results-list {
   display: grid;
   gap: 10px;
+  min-width: 0;
   overflow: auto;
   padding-right: 4px;
 }
@@ -285,11 +290,12 @@ select {
 .map-panel {
   position: relative;
   padding: 18px;
+  height: 100vh;
 }
 
 .map-empty-state {
   position: absolute;
-  top: 34px;
+  top: 320px;
   left: 34px;
   z-index: 500;
   max-width: 280px;
@@ -321,17 +327,184 @@ select {
   font-family: "Iowan Old Style", Georgia, serif;
 }
 
-@media (max-width: 1100px) {
+.map-popup {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+}
+
+.sidebar-detail {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 16px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.detail-back-button {
+  align-self: start;
+}
+
+.sidebar-detail-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 1px solid rgba(121, 84, 45, 0.18);
+}
+
+.sidebar-detail-image-fallback {
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(185, 85, 38, 0.16), rgba(214, 180, 116, 0.2)),
+    #f7ebd4;
+  color: #8d4c1f;
+  font-size: 15px;
+}
+
+.sidebar-detail-copy {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 6px 4px 4px 0;
+}
+
+.sidebar-detail-copy h2 {
+  margin: 0;
+  line-height: 0.98;
+  font-size: 30px;
+}
+
+.sidebar-detail-address {
+  margin: 0;
+  color: #5d4125;
+  line-height: 1.45;
+}
+
+.map-popup span,
+.map-popup em {
+  color: #5d4125;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.map-popup em {
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
   .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .sidebar {
+    order: 2;
+    grid-template-rows: auto auto 1fr;
+    padding: 16px 14px calc(28px + env(safe-area-inset-bottom));
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    background: linear-gradient(180deg, rgba(255, 246, 228, 0.98) 0%, rgba(247, 228, 194, 0.96) 100%);
+  }
+
+  .sidebar-detail-mode,
+  .sidebar-mobile {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .browse-sidebar {
+    gap: 14px;
+  }
+
+  .map-panel {
+    order: 1;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: auto;
+    padding: 12px 12px 0;
+    background: linear-gradient(180deg, rgba(245, 234, 216, 0.96) 0%, rgba(245, 234, 216, 0.78) 74%, rgba(245, 234, 216, 0) 100%);
+  }
+
+  .map-empty-state {
+    top: 26px;
+    left: 26px;
+    right: 26px;
+    max-width: none;
+  }
+
+  .map-root {
+    height: clamp(280px, 44dvh, 420px);
+    border-radius: 24px;
+  }
+
+  .eyebrow {
+    font-size: 15px;
+  }
+
+  .lede {
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  .results-meta-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .results-list {
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .result-item {
+    padding: 16px;
+  }
+
+  .sidebar-detail {
+    gap: 14px;
+    overflow: visible;
+  }
+
+  .sidebar-detail-copy {
+    overflow: visible;
+    padding: 4px 0 0;
+  }
+
+  .sidebar-detail-image {
+    height: 180px;
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-grid {
     grid-template-columns: 1fr;
   }
 
   .map-panel {
-    padding-top: 0;
+    padding: 10px 10px 0;
   }
 
   .map-root {
-    height: 65vh;
-    border-radius: 24px 24px 0 0;
+    height: clamp(250px, 40dvh, 340px);
+  }
+
+  .sidebar-detail-image {
+    height: 156px;
+  }
+
+  .detail-links a {
+    width: 100%;
+    justify-content: center;
   }
 }

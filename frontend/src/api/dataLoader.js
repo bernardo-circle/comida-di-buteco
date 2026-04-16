@@ -17,7 +17,7 @@ async function fetchJson(url) {
 
 export async function loadButecos() {
   try {
-    const liveData = await fetchJson("/api/butecos");
+    const liveData = await fetchJson("/data/rio_butecos_final.json");
     return liveData.map(normalizeRecord);
   } catch {
     const sampleData = await fetchJson("/data/rio_butecos_sample.json");

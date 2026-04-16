@@ -61,27 +61,29 @@ The archive mirror preserves visible card content well, but not the original `De
 ## Frontend strategy
 
 - Vite + React
-- Leaflet map with OpenStreetMap tiles
-- Marker clustering to keep dense areas readable
+- Leaflet map with Stadia Alidade Smooth tiles
+- Individual `CircleMarker` points with hover and click interactions
 - Sidebar includes:
   - project framing
   - selected buteco details
   - search by name
   - neighborhood filter
   - results list
+  - mobile browse/details switching on smaller screens
 - Map panel includes:
-  - clustered markers
+  - individual buteco markers
+  - marker hover preview
   - marker click selection
   - bounds fitting for filtered results
   - fly-to behavior for selected records
 
 ## Data loading strategy
 
-- During local development, Vite exposes `/api/butecos`
-- That route reads `output/rio_butecos_final.json` from the repository root
+- The built frontend reads `frontend/public/data/rio_butecos_final.json`
 - If the final dataset is missing, the UI falls back to `frontend/public/data/rio_butecos_sample.json`
+- This allows the app to be deployed as a plain static site on Vercel
 
-This keeps local development simple without introducing a separate API service.
+This keeps deployment simple without introducing a separate API service.
 
 ## Key tradeoffs
 

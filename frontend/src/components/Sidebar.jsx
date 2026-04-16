@@ -17,29 +17,26 @@ function DetailValue({ value, fallback = "Não informado", multiline = false }) 
   );
 }
 
-function DetailsCard({ record }) {
-  if (!record) {
-    return (
-      <section className="details-card empty">
-        <h2>Nenhum buteco selecionado</h2>
-        <p>Escolha um item na lista ou clique em um marcador no mapa.</p>
-      </section>
-    );
-  }
-
+function SelectedButecoDetails({ record, onBack }) {
   return (
-    <section className="details-card">
+    <section className="sidebar-detail">
+      <button type="button" className="ghost-button detail-back-button" onClick={onBack}>
+        Voltar para a busca
+      </button>
+
       {record.image_url ? (
-        <img src={record.image_url} alt={record.name} className="details-image" />
+        <img src={record.image_url} alt={record.name} className="sidebar-detail-image" />
       ) : (
-        <div className="details-image details-image-fallback">
+        <div className="sidebar-detail-image sidebar-detail-image-fallback">
           <span>Sem imagem disponível</span>
         </div>
       )}
-      <div className="details-copy">
-        <p className="eyebrow">Selecionado</p>
+
+      <div className="sidebar-detail-copy">
+        <p className="eyebrow">Buteco selecionado</p>
         <h2>{record.name}</h2>
-        <p>{record.address_normalized || record.address_raw}</p>
+        <p className="sidebar-detail-address">{record.address_normalized || record.address_raw}</p>
+
         <dl className="detail-grid">
           <div>
             <dt>Bairro</dt>
@@ -58,7 +55,9 @@ function DetailsCard({ record }) {
             <DetailValue value={record.dish_name} />
           </div>
         </dl>
+
         <p className="dish-description">{record.dish_description || "Descrição do petisco não informada."}</p>
+
         <div className="detail-links">
           {record.detalhes_url ? (
             <a href={record.detalhes_url} target="_blank" rel="noreferrer">
@@ -76,7 +75,38 @@ function DetailsCard({ record }) {
   );
 }
 
-export default function Sidebar({
+function SidebarHeader() {
+  return (
+    <div className="sidebar-header">
+      <p className="eyebrow">Comida di Buteco</p>
+      <p className="lede">Explore os butecos do Rio de Janeiro, filtre por bairro e navegue sem sair do mapa.</p>
+    </div>
+  );
+}
+
+function MobilePanelSwitcher({ hasSelection, mobilePanel, onChange }) {
+  return (
+    <section className="mobile-panel-switcher" aria-label="Alternar entre lista e detalhes">
+      <button
+        type="button"
+        className={`mobile-panel-button ${mobilePanel === "browse" ? "active" : ""}`}
+        onClick={() => onChange("browse")}
+      >
+        Explorar
+      </button>
+      <button
+        type="button"
+        className={`mobile-panel-button ${mobilePanel === "details" ? "active" : ""}`}
+        onClick={() => onChange("details")}
+        disabled={!hasSelection}
+      >
+        Detalhes
+      </button>
+    </section>
+  );
+}
+
+function BrowseSidebar({
   records,
   filteredRecords,
   neighborhoods,
@@ -88,25 +118,14 @@ export default function Sidebar({
   onSelect,
   onResetFilters,
 }) {
-  const selectedRecord = filteredRecords.find((record) => record.id === selectedId) || records.find((record) => record.id === selectedId) || null;
   const hasActiveFilters = Boolean(query.trim() || neighborhood);
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-header">
-        <p className="eyebrow">Comida di Buteco</p>
-        <h1>Rio no mapa</h1>
-        <p className="lede">
-          Explore os butecos do Rio de Janeiro, filtre por bairro e abra os detalhes sem sair do mapa.
-        </p>
-      </div>
-
-      <DetailsCard record={selectedRecord} />
-
+    <section className="browse-sidebar">
       <section className="filters">
         <label className="control">
-          <span>Buscar por nome</span>
-          <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Ex.: Baixo Gago" />
+          <span>Buscar por nome do Buteco</span>
+          <input value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Ex.: Cachambeer" />
         </label>
 
         <label className="control">
@@ -161,6 +180,34 @@ export default function Sidebar({
           </div>
         )}
       </section>
+    </section>
+  );
+}
+
+export default function Sidebar(props) {
+  const { selectedRecord, onBackToBrowse, isMobile, mobilePanel, onMobilePanelChange } = props;
+  const hasSelection = Boolean(selectedRecord);
+
+  let content;
+
+  if (isMobile) {
+    content =
+      mobilePanel === "details" && hasSelection ? (
+        <SelectedButecoDetails record={selectedRecord} onBack={() => onMobilePanelChange("browse")} />
+      ) : (
+        <BrowseSidebar {...props} />
+      );
+  } else {
+    content = hasSelection ? <SelectedButecoDetails record={selectedRecord} onBack={onBackToBrowse} /> : <BrowseSidebar {...props} />;
+  }
+
+  return (
+    <aside className={`sidebar ${selectedRecord ? "sidebar-detail-mode" : ""} ${isMobile ? "sidebar-mobile" : ""}`}>
+      <SidebarHeader />
+      {isMobile ? (
+        <MobilePanelSwitcher hasSelection={hasSelection} mobilePanel={mobilePanel} onChange={onMobilePanelChange} />
+      ) : null}
+      {content}
     </aside>
   );
 }

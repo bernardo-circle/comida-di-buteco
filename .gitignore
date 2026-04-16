@@ -3,6 +3,7 @@
 .venv/
 node_modules/
 dist/
+.vite/
 __pycache__/
 *.pyc
 output/*.csv
