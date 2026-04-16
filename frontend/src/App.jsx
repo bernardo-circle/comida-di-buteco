@@ -10,6 +10,39 @@ function searchKey(value) {
     .toLowerCase();
 }
 
+function useIsMobile(breakpoint = 900) {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.matchMedia(`(max-width: ${breakpoint}px)`).matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia(`(max-width: ${breakpoint}px)`);
+    const updateMatch = (event) => {
+      setIsMobile(event.matches);
+    };
+
+    setIsMobile(mediaQuery.matches);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", updateMatch);
+      return () => mediaQuery.removeEventListener("change", updateMatch);
+    }
+
+    mediaQuery.addListener(updateMatch);
+    return () => mediaQuery.removeListener(updateMatch);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 export default function App() {
   const [records, setRecords] = useState([]);
   const [status, setStatus] = useState("loading");
@@ -17,6 +50,8 @@ export default function App() {
   const [neighborhood, setNeighborhood] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState("browse");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +112,10 @@ export default function App() {
   function openButecoDetails(id) {
     setSelectedId(id);
     setIsDetailOpen(true);
+
+    if (isMobile) {
+      setMobilePanel("details");
+    }
   }
 
   useEffect(() => {
@@ -96,6 +135,17 @@ export default function App() {
       setIsDetailOpen(false);
     }
   }, [filteredRecords, selectedId]);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setMobilePanel("browse");
+      return;
+    }
+
+    if (!selectedRecord) {
+      setMobilePanel("browse");
+    }
+  }, [isMobile, selectedRecord]);
 
   if (status === "loading") {
     return <main className="status-screen">Carregando butecos...</main>;
@@ -123,6 +173,9 @@ export default function App() {
           setSelectedId(null);
         }}
         onResetFilters={resetFilters}
+        isMobile={isMobile}
+        mobilePanel={mobilePanel}
+        onMobilePanelChange={setMobilePanel}
       />
       <MapView
         records={filteredRecords}

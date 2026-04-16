@@ -75,6 +75,37 @@ function SelectedButecoDetails({ record, onBack }) {
   );
 }
 
+function SidebarHeader() {
+  return (
+    <div className="sidebar-header">
+      <p className="eyebrow">Comida di Buteco</p>
+      <p className="lede">Explore os butecos do Rio de Janeiro, filtre por bairro e navegue sem sair do mapa.</p>
+    </div>
+  );
+}
+
+function MobilePanelSwitcher({ hasSelection, mobilePanel, onChange }) {
+  return (
+    <section className="mobile-panel-switcher" aria-label="Alternar entre lista e detalhes">
+      <button
+        type="button"
+        className={`mobile-panel-button ${mobilePanel === "browse" ? "active" : ""}`}
+        onClick={() => onChange("browse")}
+      >
+        Explorar
+      </button>
+      <button
+        type="button"
+        className={`mobile-panel-button ${mobilePanel === "details" ? "active" : ""}`}
+        onClick={() => onChange("details")}
+        disabled={!hasSelection}
+      >
+        Detalhes
+      </button>
+    </section>
+  );
+}
+
 function BrowseSidebar({
   records,
   filteredRecords,
@@ -90,12 +121,7 @@ function BrowseSidebar({
   const hasActiveFilters = Boolean(query.trim() || neighborhood);
 
   return (
-    <>
-      <div className="sidebar-header">
-        <p className="eyebrow">Comida di Buteco</p>
-        <p className="lede">Explore os butecos do Rio de Janeiro, filtre por bairro e navegue sem sair do mapa.</p>
-      </div>
-
+    <section className="browse-sidebar">
       <section className="filters">
         <label className="control">
           <span>Buscar por nome do Buteco</span>
@@ -154,16 +180,34 @@ function BrowseSidebar({
           </div>
         )}
       </section>
-    </>
+    </section>
   );
 }
 
 export default function Sidebar(props) {
-  const { selectedRecord, onBackToBrowse } = props;
+  const { selectedRecord, onBackToBrowse, isMobile, mobilePanel, onMobilePanelChange } = props;
+  const hasSelection = Boolean(selectedRecord);
+
+  let content;
+
+  if (isMobile) {
+    content =
+      mobilePanel === "details" && hasSelection ? (
+        <SelectedButecoDetails record={selectedRecord} onBack={() => onMobilePanelChange("browse")} />
+      ) : (
+        <BrowseSidebar {...props} />
+      );
+  } else {
+    content = hasSelection ? <SelectedButecoDetails record={selectedRecord} onBack={onBackToBrowse} /> : <BrowseSidebar {...props} />;
+  }
 
   return (
-    <aside className={`sidebar ${selectedRecord ? "sidebar-detail-mode" : ""}`}>
-      {selectedRecord ? <SelectedButecoDetails record={selectedRecord} onBack={onBackToBrowse} /> : <BrowseSidebar {...props} />}
+    <aside className={`sidebar ${selectedRecord ? "sidebar-detail-mode" : ""} ${isMobile ? "sidebar-mobile" : ""}`}>
+      <SidebarHeader />
+      {isMobile ? (
+        <MobilePanelSwitcher hasSelection={hasSelection} mobilePanel={mobilePanel} onChange={onMobilePanelChange} />
+      ) : null}
+      {content}
     </aside>
   );
 }
